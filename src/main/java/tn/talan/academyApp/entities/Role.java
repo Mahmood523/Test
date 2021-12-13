@@ -1,13 +1,13 @@
 package tn.talan.academyApp.entities;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 
 
 @Entity
@@ -17,10 +17,10 @@ public class Role implements Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long roleId;
 	
-	
-	@Enumerated(EnumType.STRING)
-	private ERole name;
-	
+	private String name;
+	private static final long serialVersionUID = 1L;
+	@ManyToMany(mappedBy = "roles")
+	Set<User> users;
 	
 	
 	public Role() {
@@ -29,7 +29,7 @@ public class Role implements Serializable{
 	
 	
 	
-	public Role(Long roleId, ERole name) {
+	public Role(Long roleId, String name) {
 		super();
 		this.roleId = roleId;
 		this.name = name;
@@ -44,11 +44,11 @@ public class Role implements Serializable{
 		this.roleId = roleId;
 	}
 
-	public ERole getName() {
+	public String getName() {
 		return name;
 	}
 
-	public void setName(ERole name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 	

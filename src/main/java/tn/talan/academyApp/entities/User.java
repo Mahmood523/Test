@@ -24,7 +24,8 @@ public class User implements Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long userId;
 	
-	private String username;
+	private String firstName;
+	private String lastName;
 	
 	private String password;
 	private String email;
@@ -34,6 +35,7 @@ public class User implements Serializable{
 			joinColumns = @JoinColumn(name="user_id"),
 			inverseJoinColumns = @JoinColumn(name="role_id"))
 	private Set<Role> roles = new HashSet<>();
+	private static final long serialVersionUID = 1L;
 	
 	
 	
@@ -42,23 +44,37 @@ public class User implements Serializable{
 	}
 	
 	
-	public User(String username, String password, String email) {
+	
+	public User( String email,String firstName, String lastName, String password) {
 		super();
-		this.username = username;
+		this.firstName = firstName;
+		this.lastName = lastName;
 		this.password = password;
 		this.email = email;
 	}
 
 
-	public User(Long userId, String username, String password, String email, Set<Role> roles) {
+
+	public User(String email, String password) {
+		super();
+		this.password = password;
+		this.email = email;
+	}
+
+
+
+	public User(Long userId, String firstName, String lastName, String password, String email, Set<Role> roles) {
 		super();
 		this.userId = userId;
-		this.username = username;
-		
+		this.firstName = firstName;
+		this.lastName = lastName;
 		this.password = password;
 		this.email = email;
 		this.roles = roles;
 	}
+
+
+
 	public Long getUserId() {
 		return userId;
 	}
@@ -84,11 +100,30 @@ public class User implements Serializable{
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
-	public String getUsername() {
-		return username;
+
+
+
+	public String getFirstName() {
+		return firstName;
 	}
-	public void setUsername(String username) {
-		this.username = username;
+
+
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
 	}
+
+
+
+	public String getLastName() {
+		return lastName;
+	}
+
+
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	
 
 }

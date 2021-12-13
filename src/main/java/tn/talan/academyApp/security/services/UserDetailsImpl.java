@@ -17,8 +17,8 @@ public class UserDetailsImpl implements UserDetails {
 	private static final long serialVersionUID = 1L;
 	
 	private Long userId;
-	private String username;
-	
+	private String firstName;
+	private String lastName;
 	private String email;
 	
 	@JsonIgnore
@@ -31,11 +31,12 @@ public class UserDetailsImpl implements UserDetails {
 		super();
 	}
 
-	public UserDetailsImpl(Long userId, String username, String email, String password,
+	public UserDetailsImpl(Long userId, String firstName,String lastName, String email, String password,
 			Collection<? extends GrantedAuthority> authorities) {
 		super();
 		this.userId = userId;
-		this.username = username;
+		this.firstName = firstName;
+		this.lastName = lastName;
 		
 		this.email = email;
 		this.password = password;
@@ -45,13 +46,14 @@ public class UserDetailsImpl implements UserDetails {
 	public static UserDetailsImpl build (User user) {
 		
 		List<GrantedAuthority> authorities=user.getRoles().stream()
-				.map(role-> new SimpleGrantedAuthority(role.getName().name()))
+				.map(role-> new SimpleGrantedAuthority(role.getName()))
 				.collect(Collectors.toList());
 		
 		return new UserDetailsImpl(
 				user.getUserId(),
-				user.getUsername(),
-				
+				user.getFirstName(),
+
+				user.getLastName(),
 				user.getEmail(),
 				user.getPassword(),
 				authorities
@@ -59,13 +61,13 @@ public class UserDetailsImpl implements UserDetails {
 		
 	}
 	
+	
+	
 	public Long getUserId() {
 		return userId;
 	}
 	
-	public String getEmail() {
-		return email;
-	}
+	
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -79,7 +81,7 @@ public class UserDetailsImpl implements UserDetails {
 
 	@Override
 	public String getUsername() {
-		return username;
+		return email;
 	}
 
 	@Override
@@ -100,6 +102,22 @@ public class UserDetailsImpl implements UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 	
 	

@@ -20,9 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import tn.talan.academyApp.entities.ERole;
+import tn.talan.academyApp.dtos.UserDto;
 import tn.talan.academyApp.entities.Role;
-import tn.talan.academyApp.entities.User;
 import tn.talan.academyApp.payload.request.LoginRequest;
 import tn.talan.academyApp.payload.request.SignUpRequest;
 import tn.talan.academyApp.payload.response.JwtResponse;
@@ -31,17 +30,23 @@ import tn.talan.academyApp.repositories.RoleRepository;
 import tn.talan.academyApp.repositories.UserRepository;
 import tn.talan.academyApp.security.jwt.JwtUtils;
 import tn.talan.academyApp.security.services.UserDetailsImpl;
+import tn.talan.academyApp.services.UserService;
 
 @CrossOrigin(origins = "*" , maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
 	
 	@Autowired
 	AuthenticationManager authenticationManager;
 	
 	@Autowired
+	private UserService userService; 
+	
+	@Autowired
 	UserRepository userRepository;
+	
+	
 	
 	@Autowired
 	RoleRepository roleRepository;
@@ -56,7 +61,7 @@ public class AuthController {
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest){
 		
 		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+				new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtUtils.generateJwtToken(authentication);
@@ -69,62 +74,53 @@ public class AuthController {
 		return ResponseEntity.ok(new JwtResponse(jwt,
 				userDetails.getUserId(),
 				userDetails.getUsername(),
-				userDetails.getEmail(),
+				
 				roles));
 	}
 	
 	
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
-		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return ResponseEntity
-					.badRequest()
-					.body(new MessageResponse("Error: Username is already taken!"));
-		}
+		
 
-		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+		if (userService.existsByEmail(signUpRequest.getEmail())) {
 			return ResponseEntity
 					.badRequest()
 					.body(new MessageResponse("Error: Email is already in use!"));
 		}
 
 		// Create new user's account
-		User user = new User(signUpRequest.getUsername(), 
-				encoder.encode(signUpRequest.getPassword()),signUpRequest.getEmail()
+		UserDto userDto = new UserDto(signUpRequest.getEmail(),signUpRequest.getFirstName(),signUpRequest.getLastName(), 
+				encoder.encode(signUpRequest.getPassword())
 							 );
 
 		Set<String> strRoles = signUpRequest.getRole();
 		Set<Role> roles = new HashSet<>();
 
 		if (strRoles == null) {
-			Role collabRole = roleRepository.findByName(ERole.ROLE_COLLAB)
+			Role collabRole = roleRepository.findByName("Collaborateur")
 					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 			roles.add(collabRole);
 		} else {
 			strRoles.forEach(role -> {
 				switch (role) {
 				case "admin":
-					Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+					Role adminRole = roleRepository.findByName("Administrateur")
 							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 					roles.add(adminRole);
 
 					break;
-				case "mod":
-					Role expertRole = roleRepository.findByName(ERole.ROLE_EXPERT)
-							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-					roles.add(expertRole);
-
-					break;
+				
 				default:
-					Role collabRole = roleRepository.findByName(ERole.ROLE_COLLAB)
+					Role collabRole = roleRepository.findByName("Collaborateur")
 							.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 					roles.add(collabRole);
 				}
 			});
 		}
 
-		user.setRoles(roles);
-		userRepository.save(user);
+		userDto.setRoles(roles);
+		userService.addUser(userDto);
 
 		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 	}
